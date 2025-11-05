@@ -10,16 +10,6 @@ import os
 import stat
 
 
-def print_usage():
-    print("Usage: chmod [OPTION]... MODE FILE...")
-    print("Change the mode of each FILE to MODE.")
-    print()
-    print("Options:")
-    print("  -v    verbose mode")
-    print("  -R    change files and directories recursively")
-    print()
-    print("MODE is an octal number (e.g., 755, 644)")
-
 
 def parse_mode(mode_str):
     """Parse octal mode string to integer."""
@@ -63,51 +53,28 @@ def change_mode(path, mode, recursive=False, verbose=False):
 
 
 def main():
-    if '--help' in sys.argv or len(sys.argv) < 3:
-        print_usage()
-        return 0 if '--help' in sys.argv else 1
+    parser = argparse.ArgumentParser(
+        description='Change the mode of each FILE to MODE.'
+    )
 
-    # Parse options
-    recursive = False
-    verbose = False
+    parser.add_argument('mode', metavar='MODE',
+                        help='octal mode (e.g., 755, 644)')
+    parser.add_argument('files', nargs='+', metavar='FILE',
+                        help='files to change mode')
+    parser.add_argument('-R', '--recursive', action='store_true',
+                        help='change files and directories recursively')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='output a diagnostic for every file processed')
 
-    args = sys.argv[1:]
-    mode_str = None
-    files = []
+    args = parser.parse_args()
 
-    for arg in args:
-        if arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char == 'R':
-                    recursive = True
-                elif char == 'v':
-                    verbose = True
-                else:
-                    print(f"chmod: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'chmod --help' for more information.", file=sys.stderr)
-                    return 1
-        elif mode_str is None:
-            mode_str = arg
-        else:
-            files.append(arg)
-
-    if mode_str is None:
-        print("chmod: missing mode operand", file=sys.stderr)
-        return 1
-
-    mode = parse_mode(mode_str)
+    mode = parse_mode(args.mode)
     if mode is None:
-        print(f"chmod: invalid mode: '{mode_str}'", file=sys.stderr)
-        return 1
+        parser.error(f"invalid mode: '{args.mode}'")
 
-    if len(files) < 1:
-        print("chmod: missing operand after mode", file=sys.stderr)
-        return 1
-
-    # Change mode for each file
     success = True
-    for path in files:
-        if not change_mode(path, mode, recursive, verbose):
+    for path in args.files:
+        if not change_mode(path, mode, args.recursive, args.verbose):
             success = False
 
     return 0 if success else 1

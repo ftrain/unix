@@ -9,15 +9,6 @@ import argparse
 import os
 
 
-def print_usage():
-    print("Usage: mkdir [OPTION]... DIRECTORY...")
-    print("Create the DIRECTORY(ies), if they do not already exist.")
-    print()
-    print("Options:")
-    print("  -p    make parent directories as needed")
-    print("  -v    verbose mode")
-
-
 def make_directory(path, parents=False, verbose=False):
     """Create a directory."""
     try:
@@ -43,40 +34,23 @@ def make_directory(path, parents=False, verbose=False):
 
 
 def main():
-    if '--help' in sys.argv:
-        print_usage()
-        return 0
+    parser = argparse.ArgumentParser(
+        description='Create the DIRECTORY(ies), if they do not already exist.'
+    )
 
-    # Parse options
-    parents = False
-    verbose = False
+    parser.add_argument('directories', nargs='+', metavar='DIRECTORY',
+                        help='directories to create')
+    parser.add_argument('-p', '--parents', action='store_true',
+                        help='make parent directories as needed')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='print a message for each created directory')
 
-    args = sys.argv[1:]
-    directories = []
-
-    for arg in args:
-        if arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char == 'p':
-                    parents = True
-                elif char == 'v':
-                    verbose = True
-                else:
-                    print(f"mkdir: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'mkdir --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            directories.append(arg)
-
-    if len(directories) < 1:
-        print("mkdir: missing operand", file=sys.stderr)
-        print("Try 'mkdir --help' for more information.", file=sys.stderr)
-        return 1
+    args = parser.parse_args()
 
     # Create each directory
     success = True
-    for path in directories:
-        if not make_directory(path, parents, verbose):
+    for path in args.directories:
+        if not make_directory(path, args.parents, args.verbose):
             success = False
 
     return 0 if success else 1

@@ -10,15 +10,6 @@ import os
 import shutil
 
 
-def print_usage():
-    print("Usage: mv [OPTION]... SOURCE DEST")
-    print("  or:  mv [OPTION]... SOURCE... DIRECTORY")
-    print("Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.")
-    print()
-    print("Options:")
-    print("  -f    force overwrite")
-    print("  -v    verbose mode")
-
 
 def move_file(source, dest, force=False, verbose=False):
     """Move a file or directory."""
@@ -54,34 +45,22 @@ def move_file(source, dest, force=False, verbose=False):
 
 
 def main():
-    if '--help' in sys.argv or len(sys.argv) < 3:
-        print_usage()
-        return 0 if '--help' in sys.argv else 1
+    parser = argparse.ArgumentParser(
+        description='Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.'
+    )
 
-    # Parse options
-    force = False
-    verbose = False
+    parser.add_argument('sources', nargs='+', metavar='SOURCE',
+                        help='source file(s) or directory(ies)')
+    parser.add_argument('-f', '--force', action='store_true',
+                        help='force overwrite')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='explain what is being done')
 
-    args = sys.argv[1:]
-    files = []
+    args = parser.parse_args()
 
-    for arg in args:
-        if arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char == 'f':
-                    force = True
-                elif char == 'v':
-                    verbose = True
-                else:
-                    print(f"mv: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'mv --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            files.append(arg)
-
+    files = args.sources
     if len(files) < 2:
-        print("mv: missing file operand", file=sys.stderr)
-        return 1
+        parser.error("missing destination file operand after '%s'" % files[0] if files else "")
 
     # If multiple sources, dest must be a directory
     if len(files) > 2:
@@ -89,12 +68,10 @@ def main():
         if not os.path.isdir(dest):
             print(f"mv: target '{dest}' is not a directory", file=sys.stderr)
             return 1
-
         for source in files[:-1]:
-            move_file(source, dest, force, verbose)
+            move_file(source, dest, args.force, args.verbose)
     else:
-        # Single source to dest
-        move_file(files[0], files[1], force, verbose)
+        move_file(files[0], files[1], args.force, args.verbose)
 
     return 0
 

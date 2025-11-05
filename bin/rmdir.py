@@ -55,40 +55,23 @@ def remove_directory(path, parents=False, verbose=False):
 
 
 def main():
-    if '--help' in sys.argv:
-        print_usage()
-        return 0
+    parser = argparse.ArgumentParser(
+        description='Remove the DIRECTORY(ies), if they are empty.'
+    )
 
-    # Parse options
-    parents = False
-    verbose = False
+    parser.add_argument('directories', nargs='+', metavar='DIRECTORY',
+                        help='directories to remove')
+    parser.add_argument('-p', '--parents', action='store_true',
+                        help='remove DIRECTORY and its ancestors')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='output a diagnostic for every directory processed')
 
-    args = sys.argv[1:]
-    directories = []
-
-    for arg in args:
-        if arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char == 'p':
-                    parents = True
-                elif char == 'v':
-                    verbose = True
-                else:
-                    print(f"rmdir: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'rmdir --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            directories.append(arg)
-
-    if len(directories) < 1:
-        print("rmdir: missing operand", file=sys.stderr)
-        print("Try 'rmdir --help' for more information.", file=sys.stderr)
-        return 1
+    args = parser.parse_args()
 
     # Remove each directory
     success = True
-    for path in directories:
-        if not remove_directory(path, parents, verbose):
+    for path in args.directories:
+        if not remove_directory(path, args.parents, args.verbose):
             success = False
 
     return 0 if success else 1

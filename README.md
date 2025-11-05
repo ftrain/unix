@@ -38,6 +38,15 @@ Following the Unix philosophy:
 - **tee** - Read from stdin and write to stdout and files
 - **diff** - Compare files line by line
 
+### Text Editor (Bonus!)
+- **edit** - Simple nano-like terminal text editor with:
+  - Arrow key navigation
+  - Insert/delete characters and lines
+  - Cut and paste lines (Ctrl+K, Ctrl+U)
+  - Save file (Ctrl+S)
+  - Status line showing filename, position, and modifications
+  - Help line with key bindings
+
 ## Usage
 
 Each tool is a standalone Python script in the \`bin/\` directory:
@@ -102,18 +111,21 @@ python3 bin/echo.py "hello world" | python3 bin/tr.py 'a-z' 'A-Z'
 
 - Written in Python 3 for clarity and educational value
 - Each tool is self-contained with minimal dependencies
-- Standard library only (no external packages)
+- Standard library only (no external packages, except curses for editor)
+- **Professional CLI using argparse** - automatic help, validation, long options
 - Basic error handling and edge cases covered
 - Simplified versions - not all features of the original Unix tools
+- Text editor uses Python's curses library for terminal UI
 
 ## What's Not Included
 
 This is a learning exercise focusing on 1981-era Unix tools:
-- No text editors (ed, vi, emacs)
 - No shell implementation
 - No system administration tools
 - No network tools (they came later)
 - No advanced features from modern versions
+
+Note: We added a simple text editor as a bonus!
 
 ## Learning Value
 
