@@ -49,9 +49,9 @@ Following the Unix philosophy:
 
 ## Usage
 
-Each tool is a standalone Python script in the \`bin/\` directory:
+Each tool is a standalone Python script in the `bin/` directory:
 
-\`\`\`bash
+```bash
 # Basic usage examples
 python3 bin/grep.py "pattern" file.txt
 python3 bin/wc.py file.txt
@@ -63,27 +63,27 @@ python3 bin/cat.py file.txt | python3 bin/grep.py "search" | python3 bin/wc.py -
 
 # Get help for any tool
 python3 bin/grep.py --help
-\`\`\`
+```
 
 ## Making Tools Executable (Optional)
 
 You can make the scripts executable and add them to your PATH:
 
-\`\`\`bash
+```bash
 chmod +x bin/*.py
 
 # Add to PATH (in ~/.bashrc or ~/.zshrc)
-export PATH="/path/to/unix/bin:\$PATH"
+export PATH="/path/to/unix/bin:$PATH"
 
 # Then use without python3 prefix
 grep.py "pattern" file.txt
-\`\`\`
+```
 
 ## Testing
 
-Sample test files are in the \`tests/\` directory:
+Sample test files are in the `tests/` directory:
 
-\`\`\`bash
+```bash
 # Test grep
 python3 bin/grep.py "line" tests/sample.txt
 python3 bin/grep.py -i "unix" tests/sample.txt
@@ -105,7 +105,7 @@ python3 bin/echo.py "one:two:three:four" | python3 bin/cut.py -d : -f 2
 
 # Test tr
 python3 bin/echo.py "hello world" | python3 bin/tr.py 'a-z' 'A-Z'
-\`\`\`
+```
 
 ## Implementation Notes
 
