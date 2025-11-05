@@ -5,17 +5,7 @@ Classic Unix cat implementation in Python
 """
 
 import sys
-
-
-def print_usage():
-    print("Usage: cat [OPTION]... [FILE]...")
-    print("Concatenate FILE(s) to standard output.")
-    print()
-    print("Options:")
-    print("  -n    number all output lines")
-    print("  -b    number nonempty output lines")
-    print("  -s    squeeze multiple adjacent blank lines")
-    print("  -E    display $ at end of each line")
+import argparse
 
 
 def cat_file(filename, number_lines=False, number_nonblank=False,
@@ -78,50 +68,34 @@ def cat_file(filename, number_lines=False, number_nonblank=False,
 
 
 def main():
-    if '--help' in sys.argv:
-        print_usage()
-        return 0
+    parser = argparse.ArgumentParser(
+        description='Concatenate FILE(s) to standard output.'
+    )
 
-    # Parse options
-    number_lines = False
-    number_nonblank = False
-    squeeze_blank = False
-    show_ends = False
+    parser.add_argument('files', nargs='*', metavar='FILE',
+                        help='files to concatenate (default: stdin)')
+    parser.add_argument('-n', '--number', action='store_true',
+                        help='number all output lines')
+    parser.add_argument('-b', '--number-nonblank', action='store_true',
+                        help='number nonempty output lines')
+    parser.add_argument('-s', '--squeeze-blank', action='store_true',
+                        help='squeeze multiple adjacent blank lines')
+    parser.add_argument('-E', '--show-ends', action='store_true',
+                        help='display $ at end of each line')
 
-    args = sys.argv[1:]
-    files = []
-
-    for arg in args:
-        if arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char == 'n':
-                    number_lines = True
-                elif char == 'b':
-                    number_nonblank = True
-                elif char == 's':
-                    squeeze_blank = True
-                elif char == 'E':
-                    show_ends = True
-                else:
-                    print(f"cat: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'cat --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            files.append(arg)
+    args = parser.parse_args()
 
     # -b overrides -n
-    if number_nonblank:
-        number_lines = False
+    number_lines = args.number and not args.number_nonblank
 
     # If no files specified, read from stdin
-    if not files:
-        files = ['-']
+    files = args.files if args.files else ['-']
 
     # Process files
     line_number = 1
     for filename in files:
-        line_number = cat_file(filename, number_lines, number_nonblank,
-                              squeeze_blank, show_ends, line_number)
+        line_number = cat_file(filename, number_lines, args.number_nonblank,
+                              args.squeeze_blank, args.show_ends, line_number)
 
     return 0
 

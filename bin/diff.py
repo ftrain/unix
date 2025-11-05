@@ -5,6 +5,7 @@ Classic Unix diff implementation in Python
 """
 
 import sys
+import argparse
 
 
 def print_usage():

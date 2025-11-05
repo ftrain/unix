@@ -5,17 +5,7 @@ Classic Unix wc implementation in Python
 """
 
 import sys
-
-
-def print_usage():
-    print("Usage: wc [OPTION]... [FILE]...")
-    print("Print newline, word, and byte counts for each FILE.")
-    print()
-    print("Options:")
-    print("  -l    print the newline counts")
-    print("  -w    print the word counts")
-    print("  -c    print the byte counts")
-    print("  -m    print the character counts")
+import argparse
 
 
 def count_file(filename, show_lines=True, show_words=True,
@@ -75,50 +65,37 @@ def format_output(lines, words, chars, bytes_count, filename,
 
 
 def main():
-    # Parse options
-    show_lines = False
-    show_words = False
-    show_chars = False
-    show_bytes = False
+    parser = argparse.ArgumentParser(
+        description='Print newline, word, and byte counts for each FILE.'
+    )
 
-    args = sys.argv[1:]
-    files = []
+    parser.add_argument('files', nargs='*', metavar='FILE',
+                        help='files to count (default: stdin)')
+    parser.add_argument('-l', '--lines', action='store_true',
+                        help='print the newline counts')
+    parser.add_argument('-w', '--words', action='store_true',
+                        help='print the word counts')
+    parser.add_argument('-c', '--bytes', action='store_true',
+                        help='print the byte counts')
+    parser.add_argument('-m', '--chars', action='store_true',
+                        help='print the character counts')
 
-    i = 0
-    while i < len(args):
-        arg = args[i]
-
-        if arg == '--help':
-            print_usage()
-            return 0
-        elif arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char == 'l':
-                    show_lines = True
-                elif char == 'w':
-                    show_words = True
-                elif char == 'c':
-                    show_bytes = True
-                elif char == 'm':
-                    show_chars = True
-                else:
-                    print(f"wc: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'wc --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            files.append(arg)
-
-        i += 1
+    args = parser.parse_args()
 
     # If no options specified, show all (default behavior)
-    if not (show_lines or show_words or show_chars or show_bytes):
+    if not (args.lines or args.words or args.chars or args.bytes):
         show_lines = True
         show_words = True
         show_chars = True
+        show_bytes = False
+    else:
+        show_lines = args.lines
+        show_words = args.words
+        show_chars = args.chars
+        show_bytes = args.bytes
 
     # If no files specified, read from stdin
-    if not files:
-        files = ['-']
+    files = args.files if args.files else ['-']
 
     # Process files
     total_lines = 0

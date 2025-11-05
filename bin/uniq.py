@@ -5,6 +5,7 @@ Classic Unix uniq implementation in Python
 """
 
 import sys
+import argparse
 
 
 def print_usage():

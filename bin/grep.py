@@ -6,19 +6,7 @@ Classic Unix grep implementation in Python
 
 import sys
 import re
-
-
-def print_usage():
-    print("Usage: grep [OPTION]... PATTERN [FILE]...")
-    print("Search for PATTERN in each FILE or standard input.")
-    print()
-    print("Options:")
-    print("  -i    ignore case distinctions")
-    print("  -v    invert match (select non-matching lines)")
-    print("  -n    print line numbers with output")
-    print("  -c    print only a count of matching lines")
-    print("  -h    suppress file names on output")
-    print("  -l    print only names of files with matches")
+import argparse
 
 
 def grep(pattern, files, ignore_case=False, invert=False,
@@ -105,64 +93,34 @@ def grep(pattern, files, ignore_case=False, invert=False,
 
 
 def main():
-    if len(sys.argv) < 2:
-        print_usage()
-        return 2
+    parser = argparse.ArgumentParser(
+        description='Search for PATTERN in each FILE or standard input.',
+        add_help=False
+    )
+    parser.add_argument('--help', action='help',
+                        help='show this help message and exit')
 
-    # Parse options
-    ignore_case = False
-    invert = False
-    show_line_numbers = False
-    count_only = False
-    suppress_filename = False
-    files_only = False
+    parser.add_argument('pattern', help='pattern to search for')
+    parser.add_argument('files', nargs='*', metavar='FILE',
+                        help='files to search (default: stdin)')
+    parser.add_argument('-i', '--ignore-case', action='store_true',
+                        help='ignore case distinctions')
+    parser.add_argument('-v', '--invert-match', action='store_true',
+                        help='select non-matching lines')
+    parser.add_argument('-n', '--line-number', action='store_true',
+                        help='print line numbers with output')
+    parser.add_argument('-c', '--count', action='store_true',
+                        help='print only a count of matching lines')
+    parser.add_argument('-h', '--no-filename', action='store_true',
+                        help='suppress file names on output')
+    parser.add_argument('-l', '--files-with-matches', action='store_true',
+                        help='print only names of files with matches')
 
-    args = sys.argv[1:]
-    pattern = None
-    files = []
+    args = parser.parse_args()
 
-    i = 0
-    while i < len(args):
-        arg = args[i]
-
-        if arg == '--help':
-            print_usage()
-            return 0
-        elif arg.startswith('-') and arg != '-':
-            # Parse options
-            for char in arg[1:]:
-                if char == 'i':
-                    ignore_case = True
-                elif char == 'v':
-                    invert = True
-                elif char == 'n':
-                    show_line_numbers = True
-                elif char == 'c':
-                    count_only = True
-                elif char == 'h':
-                    suppress_filename = True
-                elif char == 'l':
-                    files_only = True
-                else:
-                    print(f"grep: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'grep --help' for more information.", file=sys.stderr)
-                    return 2
-        else:
-            # First non-option argument is the pattern
-            if pattern is None:
-                pattern = arg
-            else:
-                files.append(arg)
-
-        i += 1
-
-    if pattern is None:
-        print("grep: missing pattern", file=sys.stderr)
-        print("Try 'grep --help' for more information.", file=sys.stderr)
-        return 2
-
-    return grep(pattern, files, ignore_case, invert, show_line_numbers,
-                count_only, suppress_filename, files_only)
+    return grep(args.pattern, args.files, args.ignore_case, args.invert_match,
+                args.line_number, args.count, args.no_filename,
+                args.files_with_matches)
 
 
 if __name__ == '__main__':

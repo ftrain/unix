@@ -5,17 +5,8 @@ Classic Unix tail implementation in Python
 """
 
 import sys
+import argparse
 from collections import deque
-
-
-def print_usage():
-    print("Usage: tail [OPTION]... [FILE]...")
-    print("Print the last 10 lines of each FILE to standard output.")
-    print("With more than one FILE, precede each with a header giving the file name.")
-    print()
-    print("Options:")
-    print("  -n NUM    print the last NUM lines instead of the last 10")
-    print("  -NUM      same as -n NUM")
 
 
 def tail_file(filename, num_lines=10, show_header=False):
@@ -55,48 +46,19 @@ def tail_file(filename, num_lines=10, show_header=False):
 
 
 def main():
-    if '--help' in sys.argv:
-        print_usage()
-        return 0
+    parser = argparse.ArgumentParser(
+        description='Print the last 10 lines of each FILE to standard output.'
+    )
 
-    # Parse options
-    num_lines = 10
-    args = sys.argv[1:]
-    files = []
+    parser.add_argument('files', nargs='*', metavar='FILE',
+                        help='files to read (default: stdin)')
+    parser.add_argument('-n', '--lines', type=int, default=10, metavar='NUM',
+                        help='print the last NUM lines instead of the last 10')
 
-    i = 0
-    while i < len(args):
-        arg = args[i]
-
-        if arg == '-n':
-            # Next argument should be the number
-            if i + 1 < len(args):
-                try:
-                    num_lines = int(args[i + 1])
-                except ValueError:
-                    print(f"tail: invalid number of lines: '{args[i + 1]}'",
-                          file=sys.stderr)
-                    return 1
-                i += 1
-            else:
-                print("tail: option requires an argument -- 'n'", file=sys.stderr)
-                return 1
-        elif arg.startswith('-') and arg != '-':
-            # Check if it's -NUM format
-            try:
-                num_lines = int(arg[1:])
-            except ValueError:
-                print(f"tail: invalid option -- '{arg[1:]}'", file=sys.stderr)
-                print("Try 'tail --help' for more information.", file=sys.stderr)
-                return 1
-        else:
-            files.append(arg)
-
-        i += 1
+    args = parser.parse_args()
 
     # If no files specified, read from stdin
-    if not files:
-        files = ['-']
+    files = args.files if args.files else ['-']
 
     # Show headers if multiple files
     show_headers = len(files) > 1
@@ -105,7 +67,7 @@ def main():
     for i, filename in enumerate(files):
         if i > 0 and show_headers:
             print()
-        tail_file(filename, num_lines, show_headers)
+        tail_file(filename, args.lines, show_headers)
 
     return 0
 

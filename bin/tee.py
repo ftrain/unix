@@ -5,6 +5,7 @@ Classic Unix tee implementation in Python
 """
 
 import sys
+import argparse
 
 
 def print_usage():

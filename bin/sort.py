@@ -5,16 +5,7 @@ Classic Unix sort implementation in Python
 """
 
 import sys
-
-
-def print_usage():
-    print("Usage: sort [OPTION]... [FILE]...")
-    print("Sort lines of text FILE(s) and write to standard output.")
-    print()
-    print("Options:")
-    print("  -r    reverse the result of comparisons")
-    print("  -n    compare according to string numerical value")
-    print("  -u    output only unique lines")
+import argparse
 
 
 def sort_files(files, reverse=False, numeric=False, unique=False):
@@ -76,39 +67,25 @@ def sort_files(files, reverse=False, numeric=False, unique=False):
 
 
 def main():
-    if '--help' in sys.argv:
-        print_usage()
-        return 0
+    parser = argparse.ArgumentParser(
+        description='Sort lines of text FILE(s) and write to standard output.'
+    )
 
-    # Parse options
-    reverse = False
-    numeric = False
-    unique = False
+    parser.add_argument('files', nargs='*', metavar='FILE',
+                        help='files to sort (default: stdin)')
+    parser.add_argument('-r', '--reverse', action='store_true',
+                        help='reverse the result of comparisons')
+    parser.add_argument('-n', '--numeric-sort', action='store_true',
+                        help='compare according to string numerical value')
+    parser.add_argument('-u', '--unique', action='store_true',
+                        help='output only unique lines')
 
-    args = sys.argv[1:]
-    files = []
-
-    for arg in args:
-        if arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char == 'r':
-                    reverse = True
-                elif char == 'n':
-                    numeric = True
-                elif char == 'u':
-                    unique = True
-                else:
-                    print(f"sort: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'sort --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            files.append(arg)
+    args = parser.parse_args()
 
     # If no files specified, read from stdin
-    if not files:
-        files = ['-']
+    files = args.files if args.files else ['-']
 
-    return sort_files(files, reverse, numeric, unique)
+    return sort_files(files, args.reverse, args.numeric_sort, args.unique)
 
 
 if __name__ == '__main__':

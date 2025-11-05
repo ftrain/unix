@@ -5,24 +5,26 @@ Classic Unix echo implementation in Python
 """
 
 import sys
+import argparse
 
 
 def main():
-    # Simple echo - print all arguments separated by spaces
-    args = sys.argv[1:]
+    parser = argparse.ArgumentParser(
+        description='Display a line of text.'
+    )
 
-    # Handle -n option (no trailing newline)
-    newline = True
-    if args and args[0] == '-n':
-        newline = False
-        args = args[1:]
+    parser.add_argument('text', nargs='*', help='text to display')
+    parser.add_argument('-n', '--no-newline', action='store_true',
+                        help='do not output the trailing newline')
 
-    output = ' '.join(args)
+    args = parser.parse_args()
 
-    if newline:
-        print(output)
-    else:
+    output = ' '.join(args.text)
+
+    if args.no_newline:
         print(output, end='')
+    else:
+        print(output)
 
     return 0
 

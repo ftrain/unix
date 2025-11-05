@@ -5,6 +5,7 @@ Classic Unix rm implementation in Python
 """
 
 import sys
+import argparse
 import os
 import shutil
 

@@ -5,6 +5,7 @@ Classic Unix find implementation in Python
 """
 
 import sys
+import argparse
 import os
 import stat
 import fnmatch

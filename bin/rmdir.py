@@ -5,6 +5,7 @@ Classic Unix rmdir implementation in Python
 """
 
 import sys
+import argparse
 import os
 
 
