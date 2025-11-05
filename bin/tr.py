@@ -8,16 +8,6 @@ import sys
 import argparse
 
 
-def print_usage():
-    print("Usage: tr [OPTION]... SET1 [SET2]")
-    print("Translate, squeeze, and/or delete characters from standard input,")
-    print("writing to standard output.")
-    print()
-    print("Options:")
-    print("  -d    delete characters in SET1")
-    print("  -s    squeeze multiple occurrences of characters in SET1")
-
-
 def expand_set(char_set):
     """Expand character set notation like 'a-z' to actual characters."""
     result = []
@@ -89,43 +79,26 @@ def translate_text(set1, set2=None, delete=False, squeeze=False):
 
 
 def main():
-    if '--help' in sys.argv or len(sys.argv) < 2:
-        print_usage()
-        return 0 if '--help' in sys.argv else 1
+    parser = argparse.ArgumentParser(
+        description='Translate, squeeze, and/or delete characters from stdin to stdout.'
+    )
 
-    # Parse options
-    delete = False
-    squeeze = False
+    parser.add_argument('set1', metavar='SET1',
+                        help='first character set')
+    parser.add_argument('set2', nargs='?', metavar='SET2',
+                        help='second character set (for translation)')
+    parser.add_argument('-d', '--delete', action='store_true',
+                        help='delete characters in SET1')
+    parser.add_argument('-s', '--squeeze-repeats', action='store_true',
+                        help='squeeze multiple occurrences of characters')
 
-    args = sys.argv[1:]
-    sets = []
+    args = parser.parse_args()
 
-    for arg in args:
-        if arg.startswith('-') and len(arg) > 1:
-            for char in arg[1:]:
-                if char == 'd':
-                    delete = True
-                elif char == 's':
-                    squeeze = True
-                else:
-                    print(f"tr: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'tr --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            sets.append(arg)
+    # Validation
+    if args.delete and args.set2:
+        parser.error("cannot translate and delete at the same time")
 
-    if len(sets) < 1:
-        print("tr: missing operand", file=sys.stderr)
-        return 1
-
-    set1 = sets[0]
-    set2 = sets[1] if len(sets) > 1 else None
-
-    if delete and set2:
-        print("tr: cannot translate and delete at the same time", file=sys.stderr)
-        return 1
-
-    return translate_text(set1, set2, delete, squeeze)
+    return translate_text(args.set1, args.set2, args.delete, args.squeeze_repeats)
 
 
 if __name__ == '__main__':

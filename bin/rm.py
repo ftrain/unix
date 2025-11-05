@@ -10,15 +10,6 @@ import os
 import shutil
 
 
-def print_usage():
-    print("Usage: rm [OPTION]... FILE...")
-    print("Remove (unlink) the FILE(s).")
-    print()
-    print("Options:")
-    print("  -r, -R    remove directories and their contents recursively")
-    print("  -f        force removal, ignore nonexistent files")
-    print("  -v        verbose mode")
-
 
 def remove_file(path, recursive=False, force=False, verbose=False):
     """Remove a file or directory."""
@@ -54,43 +45,24 @@ def remove_file(path, recursive=False, force=False, verbose=False):
 
 
 def main():
-    if '--help' in sys.argv:
-        print_usage()
-        return 0
+    parser = argparse.ArgumentParser(
+        description='Remove (unlink) the FILE(s).'
+    )
 
-    # Parse options
-    recursive = False
-    force = False
-    verbose = False
+    parser.add_argument('files', nargs='+', metavar='FILE',
+                        help='files to remove')
+    parser.add_argument('-r', '-R', '--recursive', action='store_true',
+                        help='remove directories and their contents recursively')
+    parser.add_argument('-f', '--force', action='store_true',
+                        help='ignore nonexistent files and arguments, never prompt')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='explain what is being done')
 
-    args = sys.argv[1:]
-    files = []
+    args = parser.parse_args()
 
-    for arg in args:
-        if arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char in ['r', 'R']:
-                    recursive = True
-                elif char == 'f':
-                    force = True
-                elif char == 'v':
-                    verbose = True
-                else:
-                    print(f"rm: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'rm --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            files.append(arg)
-
-    if len(files) < 1:
-        print("rm: missing operand", file=sys.stderr)
-        print("Try 'rm --help' for more information.", file=sys.stderr)
-        return 1
-
-    # Remove each file
     success = True
-    for path in files:
-        if not remove_file(path, recursive, force, verbose):
+    for path in args.files:
+        if not remove_file(path, args.recursive, args.force, args.verbose):
             success = False
 
     return 0 if success else 1

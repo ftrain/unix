@@ -8,17 +8,6 @@ import sys
 import argparse
 
 
-def print_usage():
-    print("Usage: diff [OPTION]... FILE1 FILE2")
-    print("Compare files line by line.")
-    print()
-    print("Options:")
-    print("  -q    report only when files differ")
-    print("  -s    report when files are identical")
-    print("  -b    ignore changes in amount of white space")
-    print("  -i    ignore case differences")
-
-
 def normalize_line(line, ignore_space=False, ignore_case=False):
     """Normalize a line for comparison."""
     if ignore_case:
@@ -123,44 +112,26 @@ def simple_diff(file1, file2, brief=False, report_identical=False,
 
 
 def main():
-    if '--help' in sys.argv or len(sys.argv) < 3:
-        print_usage()
-        return 0 if '--help' in sys.argv else 1
+    parser = argparse.ArgumentParser(
+        description='Compare files line by line.'
+    )
 
-    # Parse options
-    brief = False
-    report_identical = False
-    ignore_space = False
-    ignore_case = False
+    parser.add_argument('file1', metavar='FILE1', help='first file to compare')
+    parser.add_argument('file2', metavar='FILE2', help='second file to compare')
+    parser.add_argument('-q', '--brief', action='store_true',
+                        help='report only when files differ')
+    parser.add_argument('-s', '--report-identical-files', action='store_true',
+                        help='report when files are identical')
+    parser.add_argument('-b', '--ignore-space-change', action='store_true',
+                        help='ignore changes in amount of white space')
+    parser.add_argument('-i', '--ignore-case', action='store_true',
+                        help='ignore case differences')
 
-    args = sys.argv[1:]
-    files = []
+    args = parser.parse_args()
 
-    for arg in args:
-        if arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char == 'q':
-                    brief = True
-                elif char == 's':
-                    report_identical = True
-                elif char == 'b':
-                    ignore_space = True
-                elif char == 'i':
-                    ignore_case = True
-                else:
-                    print(f"diff: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'diff --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            files.append(arg)
-
-    if len(files) != 2:
-        print("diff: missing operand", file=sys.stderr)
-        print("Try 'diff --help' for more information.", file=sys.stderr)
-        return 1
-
-    return simple_diff(files[0], files[1], brief, report_identical,
-                      ignore_space, ignore_case)
+    return simple_diff(args.file1, args.file2, args.brief,
+                      args.report_identical_files, args.ignore_space_change,
+                      args.ignore_case)
 
 
 if __name__ == '__main__':

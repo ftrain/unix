@@ -8,16 +8,6 @@ import sys
 import argparse
 
 
-def print_usage():
-    print("Usage: cut OPTION... [FILE]...")
-    print("Print selected parts of lines from each FILE to standard output.")
-    print()
-    print("Options:")
-    print("  -c LIST   select only these characters")
-    print("  -f LIST   select only these fields")
-    print("  -d DELIM  use DELIM instead of TAB for field delimiter")
-
-
 def parse_list(list_str):
     """Parse a list like '1,3,5-7' into a set of indices."""
     indices = set()
@@ -80,59 +70,39 @@ def cut_file(filename, char_list=None, field_list=None, delimiter='\t'):
 
 
 def main():
-    if '--help' in sys.argv or len(sys.argv) < 2:
-        print_usage()
-        return 0 if '--help' in sys.argv else 1
+    parser = argparse.ArgumentParser(
+        description='Print selected parts of lines from each FILE to standard output.'
+    )
 
-    # Parse options
+    parser.add_argument('files', nargs='*', metavar='FILE',
+                        help='files to process (default: stdin)')
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-c', '--characters', metavar='LIST',
+                       help='select only these characters')
+    group.add_argument('-f', '--fields', metavar='LIST',
+                       help='select only these fields')
+
+    parser.add_argument('-d', '--delimiter', default='\t', metavar='DELIM',
+                        help='use DELIM instead of TAB for field delimiter')
+
+    args = parser.parse_args()
+
+    # Parse the list
     char_list = None
     field_list = None
-    delimiter = '\t'
 
-    args = sys.argv[1:]
-    files = []
-
-    i = 0
-    while i < len(args):
-        arg = args[i]
-
-        if arg == '-c':
-            if i + 1 < len(args):
-                char_list = parse_list(args[i + 1])
-                i += 1
-            else:
-                print("cut: option requires an argument -- 'c'", file=sys.stderr)
-                return 1
-        elif arg == '-f':
-            if i + 1 < len(args):
-                field_list = parse_list(args[i + 1])
-                i += 1
-            else:
-                print("cut: option requires an argument -- 'f'", file=sys.stderr)
-                return 1
-        elif arg == '-d':
-            if i + 1 < len(args):
-                delimiter = args[i + 1]
-                i += 1
-            else:
-                print("cut: option requires an argument -- 'd'", file=sys.stderr)
-                return 1
-        elif not arg.startswith('-'):
-            files.append(arg)
-
-        i += 1
-
-    if char_list is None and field_list is None:
-        print("cut: you must specify a list of characters or fields", file=sys.stderr)
-        return 1
+    if args.characters:
+        char_list = parse_list(args.characters)
+    elif args.fields:
+        field_list = parse_list(args.fields)
 
     # If no files specified, read from stdin
-    if not files:
-        files = ['-']
+    files = args.files if args.files else ['-']
 
     # Process files
     for filename in files:
-        cut_file(filename, char_list, field_list, delimiter)
+        cut_file(filename, char_list, field_list, args.delimiter)
 
     return 0
 

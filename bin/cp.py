@@ -10,16 +10,6 @@ import os
 import shutil
 
 
-def print_usage():
-    print("Usage: cp [OPTION]... SOURCE DEST")
-    print("  or:  cp [OPTION]... SOURCE... DIRECTORY")
-    print("Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.")
-    print()
-    print("Options:")
-    print("  -r, -R    copy directories recursively")
-    print("  -f        force overwrite")
-    print("  -v        verbose mode")
-
 
 def copy_file(source, dest, recursive=False, force=False, verbose=False):
     """Copy a file or directory."""
@@ -61,37 +51,24 @@ def copy_file(source, dest, recursive=False, force=False, verbose=False):
 
 
 def main():
-    if '--help' in sys.argv or len(sys.argv) < 3:
-        print_usage()
-        return 0 if '--help' in sys.argv else 1
+    parser = argparse.ArgumentParser(
+        description='Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.'
+    )
 
-    # Parse options
-    recursive = False
-    force = False
-    verbose = False
+    parser.add_argument('sources', nargs='+', metavar='SOURCE',
+                        help='source file(s) to copy')
+    parser.add_argument('-r', '-R', '--recursive', action='store_true',
+                        help='copy directories recursively')
+    parser.add_argument('-f', '--force', action='store_true',
+                        help='force overwrite')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='explain what is being done')
 
-    args = sys.argv[1:]
-    files = []
+    args = parser.parse_args()
 
-    for arg in args:
-        if arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char in ['r', 'R']:
-                    recursive = True
-                elif char == 'f':
-                    force = True
-                elif char == 'v':
-                    verbose = True
-                else:
-                    print(f"cp: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'cp --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            files.append(arg)
-
+    files = args.sources
     if len(files) < 2:
-        print("cp: missing file operand", file=sys.stderr)
-        return 1
+        parser.error("missing destination file operand")
 
     # If multiple sources, dest must be a directory
     if len(files) > 2:
@@ -99,12 +76,10 @@ def main():
         if not os.path.isdir(dest):
             print(f"cp: target '{dest}' is not a directory", file=sys.stderr)
             return 1
-
         for source in files[:-1]:
-            copy_file(source, dest, recursive, force, verbose)
+            copy_file(source, dest, args.recursive, args.force, args.verbose)
     else:
-        # Single source to dest
-        copy_file(files[0], files[1], recursive, force, verbose)
+        copy_file(files[0], files[1], args.recursive, args.force, args.verbose)
 
     return 0
 

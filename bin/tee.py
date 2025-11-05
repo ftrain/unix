@@ -8,42 +8,24 @@ import sys
 import argparse
 
 
-def print_usage():
-    print("Usage: tee [OPTION]... [FILE]...")
-    print("Copy standard input to each FILE, and also to standard output.")
-    print()
-    print("Options:")
-    print("  -a    append to the given FILEs, do not overwrite")
-
-
 def main():
-    if '--help' in sys.argv:
-        print_usage()
-        return 0
+    parser = argparse.ArgumentParser(
+        description='Copy standard input to each FILE, and also to standard output.'
+    )
 
-    # Parse options
-    append = False
-    args = sys.argv[1:]
-    files = []
+    parser.add_argument('files', nargs='*', metavar='FILE',
+                        help='files to write to')
+    parser.add_argument('-a', '--append', action='store_true',
+                        help='append to the given FILEs, do not overwrite')
 
-    for arg in args:
-        if arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char == 'a':
-                    append = True
-                else:
-                    print(f"tee: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'tee --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            files.append(arg)
+    args = parser.parse_args()
 
     # Open output files
     file_handles = []
-    mode = 'a' if append else 'w'
+    mode = 'a' if args.append else 'w'
 
     try:
-        for filename in files:
+        for filename in args.files:
             try:
                 file_handles.append(open(filename, mode))
             except Exception as e:

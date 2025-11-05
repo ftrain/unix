@@ -8,17 +8,6 @@ import sys
 import argparse
 
 
-def print_usage():
-    print("Usage: uniq [OPTION]... [INPUT [OUTPUT]]")
-    print("Filter adjacent matching lines from INPUT (or standard input),")
-    print("writing to OUTPUT (or standard output).")
-    print()
-    print("Options:")
-    print("  -c    prefix lines by the number of occurrences")
-    print("  -d    only print duplicate lines, one for each group")
-    print("  -u    only print unique lines")
-
-
 def uniq_lines(input_file, output_file, count=False, duplicates_only=False,
                unique_only=False):
     """Process lines and output unique or duplicate lines."""
@@ -84,39 +73,25 @@ def uniq_lines(input_file, output_file, count=False, duplicates_only=False,
 
 
 def main():
-    if '--help' in sys.argv:
-        print_usage()
-        return 0
+    parser = argparse.ArgumentParser(
+        description='Filter adjacent matching lines from INPUT, writing to OUTPUT.'
+    )
 
-    # Parse options
-    count = False
-    duplicates_only = False
-    unique_only = False
+    parser.add_argument('input', nargs='?', default='-', metavar='INPUT',
+                        help='input file (default: stdin)')
+    parser.add_argument('output', nargs='?', default='-', metavar='OUTPUT',
+                        help='output file (default: stdout)')
+    parser.add_argument('-c', '--count', action='store_true',
+                        help='prefix lines by the number of occurrences')
+    parser.add_argument('-d', '--repeated', action='store_true',
+                        help='only print duplicate lines, one for each group')
+    parser.add_argument('-u', '--unique', action='store_true',
+                        help='only print unique lines')
 
-    args = sys.argv[1:]
-    files = []
+    args = parser.parse_args()
 
-    for arg in args:
-        if arg.startswith('-') and arg != '-':
-            for char in arg[1:]:
-                if char == 'c':
-                    count = True
-                elif char == 'd':
-                    duplicates_only = True
-                elif char == 'u':
-                    unique_only = True
-                else:
-                    print(f"uniq: invalid option -- '{char}'", file=sys.stderr)
-                    print("Try 'uniq --help' for more information.", file=sys.stderr)
-                    return 1
-        else:
-            files.append(arg)
-
-    # Determine input and output files
-    input_file = files[0] if len(files) > 0 else '-'
-    output_file = files[1] if len(files) > 1 else '-'
-
-    return uniq_lines(input_file, output_file, count, duplicates_only, unique_only)
+    return uniq_lines(args.input, args.output, args.count,
+                     args.repeated, args.unique)
 
 
 if __name__ == '__main__':
