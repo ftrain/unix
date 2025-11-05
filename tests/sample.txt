@@ -1,0 +1,10 @@
+Hello, World!
+This is a test file.
+It contains multiple lines.
+Some lines have UPPERCASE letters.
+Some lines have numbers like 123 and 456.
+This line is repeated.
+This line is repeated.
+The quick brown fox jumps over the lazy dog.
+UNIX is powerful.
+Python is versatile.
